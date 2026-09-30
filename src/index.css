@@ -97,7 +97,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; }
 }
 .btn svg { width: 18px; height: 18px; }
 .btn:active { transform: translateY(1px); }
-.btn-primary { background: linear-gradient(140deg, #ff8054, var(--coral) 62%); color: #fff; box-shadow: 0 12px 24px -10px rgba(255, 91, 52, .85); }
+.btn-primary { background: linear-gradient(140deg, #5b8cff, #2f5bd6 62%); color: #fff; box-shadow: 0 12px 24px -10px rgba(255, 91, 52, .85); }
 .btn-primary:hover { box-shadow: 0 16px 28px -10px rgba(255, 91, 52, .95); }
 .btn-ghost { background: #fff; border-color: var(--line-strong); color: var(--ink); }
 .btn-ghost:hover { border-color: var(--ink-faint); }
