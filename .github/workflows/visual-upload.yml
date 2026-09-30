@@ -1,8 +1,7 @@
 name: Visual upload
-run-name: Visual upload for ${{ github.event.workflow_run.head_sha }}
 
-# Uploads the capture a fork's pull request saved in "Visual tests" to UI Verify. `workflow_run` always
-# runs this file from the default branch, with the repo's secrets, even for a fork's pull request.
+# Uploads the capture a fork's pull request saved in "Visual tests" to UI Verify. `workflow_run` always runs this file from
+# the default branch, with the repo's secrets, even when the capture came from a fork's pull request.
 #
 # Never run code from the pull request while holding the key: no checkout of its files, no `npm ci`,
 # no `npx` inside its tree (a PR could edit .npmrc or package.json to swap the CLI). The CLI runs at a
@@ -10,10 +9,8 @@ run-name: Visual upload for ${{ github.event.workflow_run.head_sha }}
 # objects (fetched, never checked out). Every PR-controlled string (branch names) reaches the shell
 # through `env`, never `${{ }}` interpolation.
 #
-# A workflow_run job reports on the default branch, not the PR, so this posts its own "visual upload"
-# check on the PR's commit carrying the CLI's output, red while changes await review. After they are
-# accepted, visual-rerun.yml re-runs this workflow (found by the commit in its run-name) and the check
-# turns green, the same as the "visual" job does for a same-repo PR.
+# The run's own exit code isn't shown on the PR (a workflow_run job reports on the default branch), so
+# changes don't fail it; the UI Verify check the GitHub App posts on the PR's commit is the gate.
 #
 # GitHub's own env here describes the default branch, so the PR's commit, branch and number are passed
 # to the CLI explicitly (COMMIT_SHA, BRANCH, PR_NUMBER).
@@ -27,7 +24,6 @@ permissions:
   contents: read
   actions: read
   pull-requests: read
-  checks: write
 
 jobs:
   upload:
@@ -49,28 +45,39 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ github.token }}
 
-      - name: Resolve the branch and PR
+      - name: Resolve the commit, branch and PR
         id: meta
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          EVENT: ${{ github.event.workflow_run.event }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
           HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
         run: |
           set -euo pipefail
-          # workflow_run.pull_requests is empty for fork PRs, so look the PR up by its head.
-          pr=$(gh api "repos/$REPO/pulls?state=open&head=$HEAD_OWNER:$HEAD_BRANCH" --jq '.[0].number // empty')
-          if [ -z "$pr" ]; then echo "No open PR for $HEAD_OWNER:$HEAD_BRANCH; nothing to upload."; fi
+          pr=""
+          if [ "$EVENT" = "pull_request" ]; then
+            # workflow_run.pull_requests is empty for fork PRs, so look the PR up by its head.
+            pr=$(gh api "repos/$REPO/pulls?state=open&head=$HEAD_OWNER:$HEAD_BRANCH" --jq '.[0].number // empty')
+            if [ -z "$pr" ]; then echo "No open PR for $HEAD_OWNER:$HEAD_BRANCH; nothing to upload."; fi
+          fi
+          # A fork's branch name can match ours (a PR from a fork's "main"), so prefix it with the owner.
+          branch="$HEAD_BRANCH"
+          if [ "$HEAD_REPO" != "$REPO" ]; then branch="$HEAD_OWNER:$HEAD_BRANCH"; fi
+          skip=false
+          if [ "$EVENT" = "pull_request" ] && [ -z "$pr" ]; then skip=true; fi
           {
             echo "pr=$pr"
+            echo "skip=$skip"
             echo "branch<<__EOF__"
-            # A fork's branch can share a name with one of ours (a PR from a fork's "main"), so prefix it.
-            echo "$HEAD_OWNER:$HEAD_BRANCH"
+            echo "$branch"
             echo "__EOF__"
           } >> "$GITHUB_OUTPUT"
 
       - name: Fetch the commit's history (objects only, no checkout)
-        if: steps.meta.outputs.pr != ''
+        if: steps.meta.outputs.skip == 'false'
         env:
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
@@ -83,32 +90,17 @@ jobs:
           git update-ref HEAD "$HEAD_SHA"
 
       - name: Upload to UI Verify
-        if: steps.meta.outputs.pr != ''
+        if: steps.meta.outputs.skip == 'false'
         env:
           UIVERIFY_API_KEY: ${{ secrets.UIVERIFY_API_KEY }}
           COMMIT_SHA: ${{ github.event.workflow_run.head_sha }}
           BRANCH: ${{ steps.meta.outputs.branch }}
           PR_NUMBER: ${{ steps.meta.outputs.pr }}
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          set -uo pipefail
+          set -euo pipefail
           mkdir -p "$RUNNER_TEMP/clean"
           cd "$RUNNER_TEMP/clean"
           npx -y uiverify@1.7.0 upload \
             --static-dir "$RUNNER_TEMP/archive" \
             --working-directory "$RUNNER_TEMP/repo" \
-            --only-changed 2>&1 | tee "$RUNNER_TEMP/upload.log"
-          code=${PIPESTATUS[0]}
-
-          if [ "$code" = 0 ]; then conclusion=success; title="No unreviewed visual changes"
-          else conclusion=failure; title="Visual changes to review (exit $code)"; fi
-          # The log carries PR-controlled story names, so neutralize code fences before embedding it.
-          body=$(sed -e 's/\x1b\[[0-9;]*m//g' -e 's/```/'"'''"'/g' "$RUNNER_TEMP/upload.log" | tail -c 60000)
-          jq -n --arg sha "$COMMIT_SHA" --arg c "$conclusion" --arg t "$title" --arg url "$RUN_URL" \
-            --arg s "$(printf '```\n%s\n```' "$body")" \
-            '{name: "visual upload", head_sha: $sha, status: "completed", conclusion: $c, details_url: $url,
-              output: {title: $t, summary: $s}}' \
-            | gh api -X POST "repos/$REPO/check-runs" --input - --silent
-          exit "$code"
+            --only-changed --exit-zero-on-changes

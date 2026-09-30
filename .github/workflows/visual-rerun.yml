@@ -1,10 +1,10 @@
 name: UI Verify Auto-Rerun
 
-# UI Verify posts its verdict as a commit status `UI Verify: <slug>`. When every diff is accepted it
-# flips that status to success; this workflow catches the `status` event and re-runs the failed job
-# that gated the PR so its check turns green with no manual click: the "visual" job for a same-repo
-# PR, or the "Visual upload" run (named after the PR's commit) for a fork's PR.
-# NOTE: `status` triggers only fire from the copy of this file on the DEFAULT branch.
+# UI Verify posts its verdict as a commit status `UI Verify: <slug>`. When every diff is
+# accepted it flips that status to success; this workflow catches the `status` event and
+# re-runs the failed visual job so the gated Actions check turns green with no manual click.
+# NOTE: `status` triggers only fire from the copy of this file on the DEFAULT branch — merge
+# it to main first, or it won't run on PRs.
 
 on: status
 
@@ -27,18 +27,12 @@ jobs:
           set -euo pipefail
           slug="${STATUS_CONTEXT#UI Verify: }"
           case "$slug" in
-            test-public-fork) workflow=visual-tests.yml; upload_workflow=visual-upload.yml ;;
+            test-public-fork) workflow=visual-tests.yml ;;
             *) echo "No workflow mapped for project '$slug'; nothing to re-run."; exit 0 ;;
           esac
-          same_repo=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$workflow" \
+          run_ids=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$workflow" \
             --commit "$HEAD_SHA" --status failure --json databaseId --jq '.[].databaseId')
-          # A workflow_run is recorded against the default branch, so find the fork upload by its run-name.
-          fork=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$upload_workflow" --status failure \
-            --limit 100 --json databaseId,displayTitle \
-            --jq ".[] | select(.displayTitle == \"Visual upload for $HEAD_SHA\") | .databaseId")
-          run_ids="$same_repo $fork"
-          [ -z "${run_ids// /}" ] && { echo "No failed visual run for $HEAD_SHA"; exit 0; }
+          [ -z "$run_ids" ] && { echo "No failed $workflow run for $HEAD_SHA"; exit 0; }
           for run_id in $run_ids; do
-            echo "Re-running failed jobs of run $run_id"
             gh run rerun "$run_id" --failed --repo "$GITHUB_REPOSITORY"
           done
