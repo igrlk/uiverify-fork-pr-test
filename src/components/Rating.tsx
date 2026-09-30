@@ -4,7 +4,7 @@ import { Icon } from "./Icon";
 export function Rating({ value }: { value: number }) {
   return (
     <span className="rating">
-      <Icon name="i-star" /> {value.toFixed(1)}
+      <Icon name="i-star" /> {value.toFixed(1)} ★
     </span>
   );
 }
