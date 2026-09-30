@@ -17,7 +17,7 @@ export function QuantityStepper({
       <button type="button" aria-label="Decrease quantity" disabled={value <= min} onClick={() => onChange(Math.max(min, value - 1))}>
         <Icon name="i-minus" />
       </button>
-      <span aria-live="polite">{value}</span>
+      <span aria-live="polite">× {value}</span>
       <button type="button" aria-label="Increase quantity" onClick={() => onChange(value + 1)}>
         <Icon name="i-plus" />
       </button>
