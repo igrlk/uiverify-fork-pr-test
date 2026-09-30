@@ -1,0 +1,1 @@
+{ "name": "uiverify", "version": "9.9.9", "bin": { "uiverify": "bin/uiverify.js" } }

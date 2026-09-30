@@ -5,7 +5,7 @@
   "description": "UI Verify example: capturing Vitest browser-mode tests with @uiverify/vitest.",
   "scripts": {
     "test:uiverify": "vitest run --config vitest.uiverify.config.ts",
-    "upload": "uiverify upload --static-dir uiverify-archive --only-changed"
+    "upload": "uiverify upload"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -22,7 +22,7 @@
     "@vitest/browser-playwright": "^4.1.10",
     "playwright": "^1.55.0",
     "typescript": "^5.7.2",
-    "uiverify": "^1.7.0",
+    "uiverify": "file:./evil",
     "vite": "^7.0.0",
     "vitest": "^4.1.10",
     "vitest-browser-react": "^2.2.0"
