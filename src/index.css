@@ -101,7 +101,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; }
 .btn-primary:hover { box-shadow: 0 16px 28px -10px rgba(255, 91, 52, .95); }
 .btn-ghost { background: #fff; border-color: #2b5cd9; color: #2b5cd9; }
 .btn-ghost:hover { border-color: var(--ink-faint); }
-.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark { background: #1f7a4d; color: #fff; }
 .btn-block { width: 100%; }
 .btn-lg { height: 54px; font-size: 16px; border-radius: 16px; padding: 0 26px; }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
