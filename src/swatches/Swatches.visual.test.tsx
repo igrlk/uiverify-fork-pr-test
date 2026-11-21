@@ -3,6 +3,7 @@ import { takeSnapshot } from "@uiverify/vitest";
 import { expect, test } from "vitest";
 import { renderScene } from "@/test/harness";
 import "./swatches.css";
+import "./f6-border.css";
 
 // One screen per flow, so a change to one swatch's colour shows on exactly one screen.
 for (const flow of ["f1", "f2", "f3", "f4", "f5", "f6"]) {
