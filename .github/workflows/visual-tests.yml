@@ -30,7 +30,7 @@ jobs:
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           UIVERIFY_API_KEY: ${{ secrets.UIVERIFY_API_KEY }}
-        run: npx -y uiverify@1.11.0 upload --static-dir uiverify-archive --only-changed
+        run: npx -y uiverify@1.11.0 upload --static-dir uiverify-archive
       - name: Save the capture for the upload workflow
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
         uses: actions/upload-artifact@v4

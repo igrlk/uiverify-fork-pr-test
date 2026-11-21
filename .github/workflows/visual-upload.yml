@@ -103,4 +103,4 @@ jobs:
           npx -y uiverify@1.11.0 upload \
             --static-dir "$RUNNER_TEMP/archive" \
             --working-directory "$RUNNER_TEMP/repo" \
-            --only-changed --exit-zero-on-changes
+            --exit-zero-on-changes
