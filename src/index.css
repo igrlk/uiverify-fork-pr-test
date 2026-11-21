@@ -328,7 +328,7 @@ footer.site-footer .bar { display: flex; align-items: center; gap: 16px; flex-wr
   display: grid; place-items: center; font-family: var(--sans); font-weight: 700; font-size: 14px; color: var(--ink); cursor: pointer; }
 .sz.active { border-color: var(--ink); background: var(--ink); color: #fff; }
 .buy { display: flex; gap: 12px; align-items: stretch; }
-.qty { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 16px; background: #fff; }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 16px; background: #fff3bf; }
 .qty button { width: 48px; height: 54px; background: none; border: none; color: var(--ink); display: grid; place-items: center; }
 .qty button svg { width: 18px; height: 18px; }
 .qty span { width: 34px; text-align: center; font-family: var(--sans); font-weight: 800; font-size: 16px; }
