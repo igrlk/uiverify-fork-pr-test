@@ -166,7 +166,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; }
 .card .sub { margin: 0 6px; font-size: 13px; color: var(--ink-faint); }
 .card .row { display: flex; align-items: center; justify-content: space-between; margin: 12px 6px 4px; }
 .price { font-family: var(--sans); font-weight: 800; font-size: 17px; }
-.price .old { font-weight: 600; font-size: 14px; color: var(--ink-faint); text-decoration: line-through; margin-left: 6px; }
+.price .old { font-weight: 600; font-size: 14px; color: #1971c2; text-decoration: line-through; margin-left: 6px; }
 .rating { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 .rating svg { width: 14px; height: 14px; color: var(--amber); }
 .add {
@@ -430,3 +430,12 @@ footer.site-footer .bar { display: flex; align-items: center; gap: 16px; flex-wr
 .srow.total b { color: var(--coral-600); }
 /* Product-page buy button restyle. */
 .buy .btn-primary { background: linear-gradient(140deg, #ff7a45, var(--coral) 60%); color: #fff; font-weight: 800; box-shadow: 0 16px 30px -10px rgba(255, 91, 52, .95); }
+/* c note 1 */
+/* c note 2 */
+/* c note 3 */
+/* c note 4 */
+/* c note 5 */
+/* c note 6 */
+/* c note 7 */
+/* c note 8 */
+/* c note 9 */
